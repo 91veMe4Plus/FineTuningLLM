@@ -178,3 +178,6 @@ cython_debug/
 
 ##### GitHub Copilot Instruction #####
 copilot-instruction.md
+
+##### Fine-tuned model files #####
+hyperclova-deobfuscation-lora-with-10k-datasets
