@@ -173,8 +173,9 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-##### 프로젝트 세팅 #####
+##### 프로젝트 자료 #####
 *.csv
+*.png
 
 ##### GitHub Copilot Instruction #####
 copilot-instruction.md
