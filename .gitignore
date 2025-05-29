@@ -184,3 +184,5 @@ copilot-instruction.md
 hyperclova-deobfuscation-lora-with-10k-datasets
 hyperclova-deobfuscation-lora-with-30k-datasets
 KoBART-25K
+hyperclova-deobfuscation-lora-1e-4-learning-rate
+hyperclova-deobfuscation-lora-5e-4-learning-rate
