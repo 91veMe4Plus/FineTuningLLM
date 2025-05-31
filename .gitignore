@@ -181,8 +181,6 @@ cython_debug/
 copilot-instruction.md
 
 ##### Fine-tuned model files #####
-KoBART-25K
-
 # 1만개 데이터로 학습한 HyperCLOVA LoRA 모델
 hyperclova-deobfuscation-lora-with-10k-datasets
 # 3만개 데이터로 학습한 HyperCLOVA LoRA 모델
@@ -197,3 +195,10 @@ hyperclova-deobfuscation-lora-with-4-batch-size
 hyperclova-deobfuscation-lora-with-2-batch-size
 # 1배치 사이즈로 학습한 HyperCLOVA LoRA 모델
 hyperclova-deobfuscation-lora-with-1-batch-size
+gogamza-kobart-hk-v1
+gogamza-kobart-hk-v2
+hyunwoongko-kobart-25k
+hyunwoongko-kobart-2.5plus_1.6data
+hyunwoongko-kobart-4.2data
+hyunwoongko-kobart-epochs-5
+hyunwoongko-kobart-learning-rate-1e-5
