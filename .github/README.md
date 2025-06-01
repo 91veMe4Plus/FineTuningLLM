@@ -42,6 +42,120 @@
 - `testdata.csv` (1,002 샘플)
 - 난독화된 텍스트와 원본 텍스트 쌍으로 구성
 
+## 🔧 파인튜닝 전략
+
+### 1. 모델 아키텍처 및 설정
+
+#### 베이스 모델
+- **모델명**: Naver HyperCLOVAX-SEED-Text-Instruct-0.5B
+- **모델 유형**: Causal Language Model (Auto-regressive)
+- **파라미터 수**: 0.5B (5억 개)
+- **토크나이저**: HyperCLOVAX 전용 토크나이저
+
+#### 양자화 설정 (메모리 최적화)
+```python
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.bfloat16
+)
+```
+
+### 2. LoRA (Low-Rank Adaptation) 구성
+
+#### LoRA 하이퍼파라미터
+- **Rank (r)**: 16
+- **Alpha**: 32 (scaling parameter)
+- **Dropout**: 0.1
+- **Target Modules**: 
+  - `q_proj`, `k_proj`, `v_proj`, `o_proj` (Attention layers)
+  - `gate_proj`, `up_proj`, `down_proj` (Feed-forward layers)
+- **Task Type**: CAUSAL_LM
+- **Bias**: "none"
+
+#### LoRA 설정 코드
+```python
+lora_config = LoraConfig(
+    r=16,
+    lora_alpha=32,
+    target_modules=["q_proj", "k_proj", "v_proj", "o_proj", 
+                   "gate_proj", "up_proj", "down_proj"],
+    lora_dropout=0.1,
+    bias="none",
+    task_type=TaskType.CAUSAL_LM
+)
+```
+
+### 3. 데이터 전처리 전략
+
+#### 프롬프트 템플릿
+```
+### 지시사항:
+다음 난독화된 한국어 텍스트를 원래 텍스트로 복원해주세요.
+
+난독화된 텍스트: {obfuscated_text}
+
+### 응답:
+{original_text}
+```
+
+#### 데이터 샘플링 전략
+- **균형 샘플링**: 6가지 텍스트 유형에서 균등하게 샘플링
+- **최대 길이**: 512 토큰으로 제한
+- **훈련/검증 분할**: 9:1 비율
+
+### 4. 훈련 설정
+
+#### 공통 훈련 파라미터
+- **Epochs**: 3
+- **Gradient Accumulation Steps**: 4
+- **Warmup Steps**: 100
+- **Weight Decay**: 0.01
+- **FP16**: True (Mixed Precision Training)
+- **Evaluation Strategy**: Steps (매 200 스텝)
+- **Save Strategy**: Best model 기준 저장
+
+#### 최적화 알고리즘
+- **Optimizer**: AdamW
+- **Scheduler**: Linear Warmup + Decay
+
+### 5. 추론 설정
+
+#### 생성 파라미터
+- **Max New Tokens**: 128
+- **Do Sample**: True
+- **Temperature**: 0.7
+- **Top-p**: 0.9
+- **Repetition Penalty**: 미적용
+
+### 6. 성능 최적화 기법
+
+#### 메모리 최적화
+- **4-bit 양자화**: BitsAndBytes 활용
+- **Gradient Checkpointing**: 메모리 사용량 감소
+- **DataLoader Pin Memory**: False (Colab 환경 최적화)
+
+#### 훈련 안정성
+- **Learning Rate Warmup**: 초기 100 스텝 동안 점진적 증가
+- **Gradient Clipping**: 기본값 적용
+- **Early Stopping**: Validation Loss 기준
+
+### 7. 실험별 변수 설정
+
+#### Learning Rate 실험
+- **실험 A**: 1e-4 (보수적 학습)
+- **실험 B**: 5e-4 (적극적 학습)
+
+#### Batch Size 실험  
+- **실험 A**: Per Device Batch Size 1 (메모리 효율)
+- **실험 B**: Per Device Batch Size 2 (균형)
+- **실험 C**: Per Device Batch Size 4 (속도 우선)
+
+#### Dataset Size 실험
+- **실험 A**: 10,000 샘플 (효율성 검증)
+- **실험 B**: 30,000 샘플 (성능 최대화)
+
 ## 🧪 실험 설계 및 분석
 
 ### 1. Learning Rate 실험
@@ -232,29 +346,6 @@ pip install scikit-learn>=1.3.0
 - 추론 시간 비교 그래프
 - 텍스트 길이별 성능 분석
 - 카테고리별 정확도 분포
-
-## 📝 인용 및 기여
-
-이 프로젝트의 결과를 사용하실 경우 다음과 같이 인용해 주세요:
-
-```bibtex
-@misc{91veme4plus2025korean,
-  title={Korean Text De-obfuscation Fine-tuning Project},
-  author={91veMe4Plus Team},
-  year={2025},
-  url={https://github.com/91veMe4Plus/FineTuningLLM}
-}
-```
-
-### 기여 방법
-1. 이슈 리포팅을 통한 버그 및 개선사항 제안
-2. 새로운 실험 아이디어 제안
-3. 코드 개선 및 최적화
-4. 문서 개선 및 번역
-
-## 📞 연락처
-
-프로젝트 관련 문의사항이 있으시면 GitHub Issues를 통해 연락해 주세요.
 
 ---
 
